@@ -230,11 +230,10 @@ export const leftHeaderCellSizeAndPositionGetter = (
   const columnsToSpan = rowIndexes.length - depth - maxDepthBelow;
 
   // add up all the widths of the columns, other than itself, that this cell spans
-  const spanWidth = sumArray(
-    leftHeaderWidths.slice(depth + 1, depth + columnsToSpan),
-  );
+  const spanWidth =
+    sumArray(leftHeaderWidths.slice(depth + 1, depth + columnsToSpan)) || 0;
   const columnPadding = depth === 0 ? LEFT_HEADER_LEFT_SPACING : 0;
-  const columnWidth = leftHeaderWidths[depth];
+  const columnWidth = leftHeaderWidths[depth] || MIN_HEADER_CELL_WIDTH;
 
   return {
     height: span * CELL_HEIGHT,
