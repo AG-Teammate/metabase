@@ -6,11 +6,6 @@ import {
   showDashboardCardActions,
   visitDashboard,
   addOrUpdateDashboardCard,
-  getDashboardCardMenu,
-  getDashboardCard,
-  appBar,
-  summarize,
-  visualize,
 } from "e2e/support/helpers";
 
 import { SAMPLE_DB_ID } from "e2e/support/cypress_data";
@@ -970,42 +965,6 @@ describe("scenarios > dashboard > dashboard drill", () => {
         cy.findByText("Update filter");
       });
     }
-  });
-
-  it("should display a back button to the dashboard when navigating to a question", () => {
-    const dashboardName = "Orders in a dashboard";
-    const buttonLabel = `Back to ${dashboardName}`;
-    cy.intercept("/api/dashboard/*").as("dashboard");
-    cy.intercept("/api/card/*/query").as("cardQuery");
-
-    visitDashboard(1);
-    cy.wait("@dashboard");
-    cy.findByTestId("dashcard").findByText("Orders").click();
-    cy.wait("@cardQuery");
-    cy.findByLabelText(buttonLabel).should("be.visible");
-    cy.icon("notebook").click();
-    summarize({ mode: "notebook" });
-    popover().findByText("Count of rows").click();
-    cy.findByLabelText(buttonLabel).should("be.visible");
-    visualize();
-    cy.findByLabelText(buttonLabel).click();
-    cy.wait("@dashboard");
-    cy.findByTestId("dashboard-header")
-      .findByText(dashboardName)
-      .should("be.visible");
-
-    getDashboardCard().realHover();
-    getDashboardCardMenu().click();
-    popover().findByText("Edit question").click();
-    cy.findByLabelText(buttonLabel).click();
-    cy.wait("@dashboard");
-    cy.findByTestId("dashboard-header")
-      .findByText(dashboardName)
-      .should("be.visible");
-
-    appBar().findByText("Our analytics").click();
-    cy.findByTestId("collection-table").findByText("Orders").click();
-    cy.findByLabelText(buttonLabel).should("not.exist");
   });
 });
 

@@ -25,7 +25,6 @@
    [metabase.util.i18n :refer [trs]]
    [metabase.util.log :as log]
    [toucan.db :as db]
-   [toucan.hydrate :refer [hydrate]]
    [toucan2.core :as t2]
    [toucan2.model :as t2.model])
   (:refer-clojure :exclude [descendants]))
@@ -78,7 +77,7 @@
   [k]
   (fn [entity]
     (or
-     (some-> entity (hydrate k) (get k) identity-hash)
+     (some-> entity (t2/hydrate k) (get k) identity-hash)
      "<none>")))
 
 (defmulti generate-path
@@ -430,7 +429,9 @@
 (defn log-path-str
   "Returns a string for logging from a serdes path sequence (i.e. in :serdes/meta)"
   [elements]
-  (->> elements (map #(str (:model %) " " (:id %))) (str/join " > ")))
+  (->> elements
+       (map #(str (:model %) " " (:id %)))
+       (str/join " > ")))
 
 
 ;; utils
@@ -856,9 +857,9 @@
   {"card"       :model/Card
    "dataset"    :model/Card
    "collection" :metabase.models.collection/Collection
-   "database"   :metabase.models.database/Database
+   "database"   :model/Database
    "dashboard"  :model/Dashboard
-   "table"      :metabase.models.table/Table})
+   "table"      :model/Table})
 
 (defn- export-viz-link-card
   [settings]

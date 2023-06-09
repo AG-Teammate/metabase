@@ -27,6 +27,7 @@ export const INITIAL_DASHBOARD_STATE: DashboardState = {
   },
   loadingControls: {},
   isAddParameterPopoverOpen: false,
+  isNavigatingBackToDashboard: false,
   slowCards: {},
   sidebar: { props: {} },
   missingActionParameters: null,
@@ -34,6 +35,7 @@ export const INITIAL_DASHBOARD_STATE: DashboardState = {
     toastId: null,
     toastDashboardId: null,
   },
+  tabDeletions: {},
 };
 
 export const DASHBOARD_SLOW_TIMEOUT = 15 * 1000;

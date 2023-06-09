@@ -1,5 +1,4 @@
-/* eslint-disable react/prop-types */
-import React from "react";
+import * as React from "react";
 
 import { getAccentColors } from "metabase/lib/colors/groups";
 import ColorSelector from "metabase/core/components/ColorSelector";
@@ -63,4 +62,5 @@ const ChartNestedSettingsSeriesSingle = ({
   );
 };
 
+// eslint-disable-next-line import/no-default-export -- deprecated usage
 export default ChartNestedSettingsSeriesSingle;

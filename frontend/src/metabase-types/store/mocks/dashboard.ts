@@ -18,6 +18,7 @@ export const createMockDashboardState = (
   loadingControls: {},
   isEditing: null,
   isAddParameterPopoverOpen: false,
+  isNavigatingBackToDashboard: false,
   slowCards: {},
   sidebar: {
     props: {},
@@ -28,5 +29,6 @@ export const createMockDashboardState = (
     toastId: null,
     toastDashboardId: null,
   },
+  tabDeletions: {},
   ...opts,
 });

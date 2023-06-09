@@ -5,7 +5,6 @@
    [metabase.db :as mdb]
    [metabase.db.query :as mdb.query]
    [metabase.db.util :as mdb.u]
-   [metabase.events :as events]
    [metabase.models.card :refer [Card]]
    [metabase.models.dashboard-card-series :refer [DashboardCardSeries]]
    [metabase.models.interface :as mi]
@@ -20,7 +19,6 @@
    [methodical.core :as methodical]
    [schema.core :as s]
    [toucan.db :as db]
-   [toucan.hydrate :refer [hydrate]]
    [toucan2.core :as t2]))
 
 (def DashboardCard
@@ -110,7 +108,7 @@
   "Fetch a single DashboardCard by its ID value."
   [id :- su/IntGreaterThanZero]
   (-> (t2/select-one :model/DashboardCard :id id)
-      (hydrate :series)))
+      (t2/hydrate :series)))
 
 (defn dashcard->multi-cards
   "Return the cards which are other cards with respect to this dashboard card
@@ -220,25 +218,20 @@
                                  (for [dashcard dashboard-cards]
                                    (merge {:parameter_mappings []
                                            :visualization_settings {}}
-                                          (select-keys dashcard
-                                                       [:dashboard_id :card_id :action_id :size_x :size_y :row :col
-                                                        :parameter_mappings :visualization_settings :dashboard_tab_id]))))]
+                                          (dissoc dashcard :id :created_at :updated_at :entity_id :series :card :collection_authority_level))))]
         ;; add series to the DashboardCard
         (update-dashboard-cards-series! (zipmap dashboard-card-ids (map #(get % :series []) dashboard-cards)))
         ;; return the full DashboardCard
         (-> (t2/select DashboardCard :id [:in dashboard-card-ids])
-            (hydrate :series))))))
+            (t2/hydrate :series))))))
 
 (defn delete-dashboard-cards!
   "Delete DashboardCards of a Dasbhoard."
-  [dashboard-cards dashboard-id actor-id]
-  {:pre [(coll? dashboard-cards)
-         (integer? actor-id)]}
-  (let [dashcard-ids (map :id dashboard-cards)]
-    (t2/with-transaction [_conn]
-      (t2/delete! PulseCard :dashboard_card_id [:in dashcard-ids])
-      (t2/delete! DashboardCard :id [:in dashcard-ids]))
-    (events/publish-event! :dashboard-remove-cards {:id dashboard-id :actor_id actor-id :dashcards dashboard-cards})))
+  [dashboard-card-ids]
+  {:pre [(coll? dashboard-card-ids)]}
+  (t2/with-transaction [_conn]
+    (t2/delete! PulseCard :dashboard_card_id [:in dashboard-card-ids])
+    (t2/delete! DashboardCard :id [:in dashboard-card-ids])))
 
 ;;; ----------------------------------------------- Link cards ----------------------------------------------------
 
@@ -354,10 +347,14 @@
 
 ;;; ----------------------------------------------- SERIALIZATION ----------------------------------------------------
 ;; DashboardCards are not serialized as their own, separate entities. They are inlined onto their parent Dashboards.
+;; If the parent dashboard has tabs, the dashcards are inlined under each DashboardTab, which are inlined on the Dashboard.
 ;; However, we can reuse some of the serdes machinery (especially load-one!) by implementing a few serdes methods.
 (defmethod serdes/generate-path "DashboardCard" [_ dashcard]
-  [(serdes/infer-self-path "Dashboard" (t2/select-one 'Dashboard :id (:dashboard_id dashcard)))
-   (serdes/infer-self-path "DashboardCard" dashcard)])
+  (remove nil?
+          [(serdes/infer-self-path "Dashboard" (t2/select-one 'Dashboard :id (:dashboard_id dashcard)))
+           (when (:dashboard_tab_id dashcard)
+             (serdes/infer-self-path "DashboardTab" (t2/select-one :model/DashboardTab :id (:dashboard_tab_id dashcard))))
+           (serdes/infer-self-path "DashboardCard" dashcard)]))
 
 (defmethod serdes/load-xform "DashboardCard"
   [dashcard]
@@ -366,6 +363,7 @@
       (update :card_id                serdes/*import-fk* 'Card)
       (update :action_id              serdes/*import-fk* 'Action)
       (update :dashboard_id           serdes/*import-fk* 'Dashboard)
+      (update :dashboard_tab_id       serdes/*import-fk* :model/DashboardTab)
       (update :created_at             #(if (string? %) (u.date/parse %) %))
       (update :parameter_mappings     serdes/import-parameter-mappings)
       (update :visualization_settings serdes/import-visualization-settings)))

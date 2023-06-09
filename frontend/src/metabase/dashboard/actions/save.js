@@ -118,17 +118,19 @@ export const saveDashboardAndCards = createThunkAction(
           visualization_settings: dc.visualization_settings,
           parameter_mappings: dc.parameter_mappings,
         })),
-        ordered_tabs: (dashboard.ordered_tabs ?? []).map(({ id, name }) => ({
-          id,
-          name,
-        })),
+        ordered_tabs: (dashboard.ordered_tabs ?? [])
+          .filter(tab => !tab.isRemoved)
+          .map(({ id, name }) => ({
+            id,
+            name,
+          })),
       });
       dispatch(saveCardsAndTabs(updatedCardsAndTabs));
 
       await dispatch(Dashboards.actions.update(dashboard));
 
       // make sure that we've fully cleared out any dirty state from editing (this is overkill, but simple)
-      dispatch(fetchDashboard(dashboard.id, null, preserveParameters)); // disable using query parameters when saving
+      dispatch(fetchDashboard(dashboard.id, null, { preserveParameters })); // disable using query parameters when saving
     };
   },
 );

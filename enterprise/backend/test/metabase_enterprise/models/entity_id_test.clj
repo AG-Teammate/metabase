@@ -22,11 +22,11 @@
 (def ^:private entities-external-name
   "Entities with external names, so they don't need a generated entity_id."
   #{;; Databases have external names based on their URLs; tables are nested under databases; fields under tables.
-    :metabase.models.database/Database
-    :metabase.models.table/Table
-    :metabase.models.field/Field
+    :model/Database
+    :model/Table
+    :model/Field
     ;; Settings have human-selected unique names.
-    :metabase.models.setting/Setting})
+    :model/Setting})
 
 (def ^:private entities-not-exported
   "Entities that are either:
@@ -34,42 +34,45 @@
   - exported as a child of something else (eg. timeline_event under timeline)
   so they don't need a generated entity_id."
   #{:metabase.db.data-migrations/DataMigrations
-    :metabase.models.action/HTTPAction
-    :metabase.models.action/ImplicitAction
-    :metabase.models.action/QueryAction
-    :metabase.models.activity/Activity
+    :model/HTTPAction
+    :model/ImplicitAction
+    :model/QueryAction
+    :model/Activity
     :metabase.models.application-permissions-revision/ApplicationPermissionsRevision
-    :metabase.models.bookmark/BookmarkOrdering
-    :metabase.models.bookmark/CardBookmark
-    :metabase.models.bookmark/CollectionBookmark
-    :metabase.models.bookmark/DashboardBookmark
+    :model/BookmarkOrdering
+    :model/CardBookmark
+    :model/CollectionBookmark
+    :model/DashboardBookmark
     :metabase.models.collection.root/RootCollection
     :metabase.models.collection-permission-graph-revision/CollectionPermissionGraphRevision
     :model/DashboardCardSeries
     :metabase.models.field-values/FieldValues
-    :metabase.models.login-history/LoginHistory
+    :model/LoginHistory
+    :model/FieldValues
     :metabase.models.metric-important-field/MetricImportantField
-    :metabase.models.moderation-review/ModerationReview
+    :model/ModelIndex
+    :model/ModelIndexValue
+    :model/ModerationReview
     :metabase.models.parameter-card/ParameterCard
     :metabase.models.permissions/Permissions
     :metabase.models.permissions-group/PermissionsGroup
     :metabase.models.permissions-group-membership/PermissionsGroupMembership
     :metabase.models.permissions-revision/PermissionsRevision
-    :metabase.models.persisted-info/PersistedInfo
+    :model/PersistedInfo
     :metabase.models.pulse-card/PulseCard
     :metabase.models.pulse-channel/PulseChannel
     :metabase.models.pulse-channel-recipient/PulseChannelRecipient
     :metabase.models.query/Query
     :metabase.models.query-cache/QueryCache
     :metabase.models.query-execution/QueryExecution
-    :metabase.models.revision/Revision
+    :model/Revision
     :metabase.models.revision-test/FakedCard
-    :metabase.models.secret/Secret
-    :metabase.models.session/Session
-    :metabase.models.task-history/TaskHistory
-    :metabase.models.timeline-event/TimelineEvent
+    :model/Secret
+    :model/Session
+    :model/TaskHistory
+    :model/TimelineEvent
     :metabase.models.user/User
-    :metabase.models.view-log/ViewLog
+    :model/ViewLog
     :metabase-enterprise.sandbox.models.group-table-access-policy/GroupTableAccessPolicy})
 
 (deftest ^:parallel comprehensive-entity-id-test

@@ -13,7 +13,10 @@
   Metabase models. There is a plethora of CRUD functions for working with Pulses that IMO aren't really needed (e.g.
   functions for fetching a specific Pulse). At some point in the future, we can clean this namespace up and bring the
   code in line with the rest of the codebase, but for the time being, it probably makes sense to follow the existing
-  patterns in this namespace rather than further confuse things."
+  patterns in this namespace rather than further confuse things.
+
+  Legacy note: Currently Pulses are associated with a dashboard, but this is not always the case since there are legacy
+  pulses that are a collection of cards, not dashboard."
   (:require
    [clojure.string :as str]
    [medley.core :as m]
@@ -30,7 +33,6 @@
    [metabase.util.i18n :refer [deferred-tru tru]]
    [metabase.util.schema :as su]
    [schema.core :as s]
-   [toucan.hydrate :refer [hydrate]]
    [toucan.models :as models]
    [toucan2.core :as t2]))
 
@@ -87,7 +89,7 @@
    (:card alert)
    ;; otherwise fetch the associated `:cards` (if not already fetched) and then pull the first one out, since Alerts
    ;; can only have one Card
-   (-> (hydrate alert :cards) :cards first)
+   (-> (t2/hydrate alert :cards) :cards first)
    ;; if there's still not a Card, throw an Exception!
    (throw (Exception. (tru "Invalid Alert: Alert does not have a Card associated with it")))))
 
@@ -116,7 +118,7 @@
 
 (defn- current-user-is-recipient?
   [notification]
-  (let [channels (:channels (hydrate notification [:channels :recipients]))
+  (let [channels (:channels (t2/hydrate notification [:channels :recipients]))
         recipient-ids (for [{recipients :recipients} channels
                             recipient recipients]
                         (:id recipient))]
@@ -231,14 +233,14 @@
   "Hydrate Pulse or Alert with the Fields needed for sending it."
   [notification :- (mi/InstanceOf Pulse)]
   (-> notification
-      (hydrate :creator :cards [:channels :recipients])
+      (t2/hydrate :creator :cards [:channels :recipients])
       (m/dissoc-in [:details :emails])))
 
 (s/defn ^:private hydrate-notifications :- [(mi/InstanceOf Pulse)]
   "Batched-hydrate multiple Pulses or Alerts."
   [notifications :- [(mi/InstanceOf Pulse)]]
   (as-> notifications <>
-    (hydrate <> :creator :cards [:channels :recipients])
+    (t2/hydrate <> :creator :cards [:channels :recipients])
     (map #(m/dissoc-in % [:details :emails]) <>)))
 
 (s/defn ^:private notification->pulse :- (mi/InstanceOf Pulse)

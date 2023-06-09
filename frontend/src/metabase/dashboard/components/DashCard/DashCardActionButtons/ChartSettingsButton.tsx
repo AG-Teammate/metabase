@@ -1,4 +1,3 @@
-import React from "react";
 import { t } from "ttag";
 
 import ModalWithTrigger from "metabase/components/ModalWithTrigger";
@@ -32,7 +31,10 @@ function ChartSettingsButton({
       wide
       tall
       triggerElement={
-        <DashCardActionButton tooltip={t`Visualization options`}>
+        <DashCardActionButton
+          tooltip={t`Visualization options`}
+          aria-label={t`Show visualization options`}
+        >
           <DashCardActionButton.Icon name="palette" />
         </DashCardActionButton>
       }
@@ -50,4 +52,5 @@ function ChartSettingsButton({
   );
 }
 
+// eslint-disable-next-line import/no-default-export -- deprecated usage
 export default ChartSettingsButton;
